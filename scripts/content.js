@@ -20,29 +20,29 @@ function loadContent() {
 
     internalItem.appendChild(internalBtn)
 
-    // External
-    const externalItem = document.createElement("li")
-    externalItem.role = "presentation"
-    externalItem.className = "nav-item"
+    // all
+    const allItem = document.createElement("li")
+    allItem.role = "presentation"
+    allItem.className = "nav-item"
 
-    const externalBtn = document.createElement("button")
-    externalBtn.textContent = "External"
-    externalBtn.className = "nav-link gl-tab-nav-item"
-    externalItem.appendChild(externalBtn)
+    const allBtn = document.createElement("button")
+    allBtn.textContent = "All"
+    allBtn.className = "nav-link gl-tab-nav-item"
+    allItem.appendChild(allBtn)
 
     const groupFullPath = parseGroupFullPath(document.getElementsByClassName("gl-breadcrumb-item")[0].firstElementChild.href)
 
     internalBtn.addEventListener("click", () => {
         internalBtn.blur()
-        setButtonsActiveStatuses(true, internalBtn, externalBtn)
+        setButtonsActiveStatuses(true, internalBtn, allBtn)
         mrDOMList.replaceChildren(...internalMRs)
     })
-    externalBtn.addEventListener("click", () => {
-        externalBtn.blur()
-        setButtonsActiveStatuses(false, internalBtn, externalBtn)
+    allBtn.addEventListener("click", () => {
+        allBtn.blur()
+        setButtonsActiveStatuses(false, internalBtn, allBtn)
         mrDOMList.replaceChildren(document.createTextNode("Loading..."))
 
-        getUserToExternalMergeRequests(groupFullPath).then(users => {
+        getUserToAllMergeRequests(groupFullPath).then(users => {
             const liElems = users.allAssignedMRsAsLiElements()
             const mrDOMList = contentBody.lastElementChild
             mrDOMList.replaceChildren(...liElems)
@@ -50,18 +50,18 @@ function loadContent() {
     })
 
     listTypeSelector.appendChild(internalItem)
-    listTypeSelector.appendChild(externalItem)
+    listTypeSelector.appendChild(allItem)
 
     contentBody.insertBefore(listTypeSelector, contentBody.lastElementChild)
 }
 
-function setButtonsActiveStatuses(selectInternal, internalBtn, externalBtn) {
+function setButtonsActiveStatuses(selectInternal, internalBtn, allBtn) {
     if (selectInternal) {
         internalBtn.classList.add("active", "gl-tab-nav-item-active")
-        externalBtn.classList.remove("active", "gl-tab-nav-item-active")
+        allBtn.classList.remove("active", "gl-tab-nav-item-active")
     }
     else {
-        externalBtn.classList.add("active", "gl-tab-nav-item-active")
+        allBtn.classList.add("active", "gl-tab-nav-item-active")
         internalBtn.classList.remove("active", "gl-tab-nav-item-active")
     }
 }

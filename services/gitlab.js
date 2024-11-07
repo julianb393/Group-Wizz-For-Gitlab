@@ -7,7 +7,7 @@ const GRAPHQL_GROUP_MEMBERS_QUERY = `groupMembers {
           name
           avatarUrl
           webPath
-          assignedMergeRequests {
+          assignedMergeRequests(state: opened, sort: UPDATED_DESC) {
             nodes {
               id
               title
@@ -45,7 +45,7 @@ const Q2 = "query { currentUser { name } }";
 
 const GITLAB_GRAPHQL_ENDPOINT = "api/graphql"
 
-async function getUserToExternalMergeRequests(groupFullPath) {
+async function getUserToAllMergeRequests(groupFullPath) {
 
     const query = `query { group(fullPath: "${groupFullPath}") { ${GRAPHQL_GROUP_MEMBERS_QUERY} } }`
 
