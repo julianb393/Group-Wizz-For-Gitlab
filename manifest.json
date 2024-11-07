@@ -1,0 +1,26 @@
+{
+    "manifest_version": 3,
+    "name": "GitLab MR Ext",
+    "version": "1.0",
+    "description": "Group-based merge requests to review",
+    "icons": {
+        "16": "images/icon16.png",
+        "32": "images/icon32.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "templates/merge_request.js",
+                "models/merge_request.js",
+                "models/user.js",
+                "services/gitlab.js",
+                "scripts/content.js"
+            ],
+            "matches": [
+                "https://gitlab.com/groups/*/merge_requests*"
+            ]
+        }
+    ]
+}
