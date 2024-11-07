@@ -20,7 +20,7 @@ function loadContent() {
 
     internalItem.appendChild(internalBtn)
 
-    // all
+    // All
     const allItem = document.createElement("li")
     allItem.role = "presentation"
     allItem.className = "nav-item"
@@ -51,8 +51,8 @@ function loadContent() {
 
     listTypeSelector.appendChild(internalItem)
     listTypeSelector.appendChild(allItem)
-
-    contentBody.insertBefore(listTypeSelector, contentBody.lastElementChild)
+    // Insert before the merge request list
+    contentBody.insertBefore(listTypeSelector, contentBody.children.item(4))
 }
 
 function setButtonsActiveStatuses(selectInternal, internalBtn, allBtn) {
