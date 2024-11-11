@@ -53,14 +53,14 @@ class MergeRequest {
         const createdAt = template.getElementById("template-createdAt")
         createdAt.datetime = this.creationDateTime
         const createdAtDate = new Date(Date.parse(this.creationDateTime))
-        createdAt.title = `${createdAtDate.toLocaleString('default', { month: 'long' })} ${createdAtDate.getDay()}, ${createdAtDate.getFullYear()} at ${createdAtDate.toLocaleTimeString('en-us', { timeZoneName: 'short' })}`
+        createdAt.title = `${createdAtDate.toLocaleString('default', { month: 'long' })} ${createdAtDate.getDate()}, ${createdAtDate.getFullYear()} at ${createdAtDate.toLocaleTimeString('en-us', { timeZoneName: 'short' })}`
         createdAt.textContent = this.howLongAgo(createdAtDate)
 
         // updated at
         const updatedAt = template.getElementById("template-updatedAt")
         updatedAt.datetime = this.updatedDateTime
         const updatedAtDate = new Date(Date.parse(this.updatedDateTime))
-        updatedAt.title = `${updatedAtDate.toLocaleString('default', { month: 'long' })} ${updatedAtDate.getDay()}, ${updatedAtDate.getFullYear()} at ${updatedAtDate.toLocaleTimeString('en-us', { timeZoneName: 'short' })}`
+        updatedAt.title = `${updatedAtDate.toLocaleString('default', { month: 'long' })} ${updatedAtDate.getDate()}, ${updatedAtDate.getFullYear()} at ${updatedAtDate.toLocaleTimeString('en-us', { timeZoneName: 'short' })}`
         updatedAt.textContent = this.howLongAgo(updatedAtDate)
 
         // assigned
@@ -95,7 +95,7 @@ class MergeRequest {
             return `${monthsAgo} month${monthsAgo == 1 ? "" : "s"} ago`
         }
 
-        const daysAgo = now.getDay() - fromDate.getDay()
+        const daysAgo = now.getDate() - fromDate.getDate()
         if (daysAgo > 0) {
             return `${daysAgo} day${daysAgo == 1 ? "" : "s"} ago`
         }

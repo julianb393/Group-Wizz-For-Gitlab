@@ -44,7 +44,7 @@ const GRAPHQL_GROUP_MEMBERS_QUERY = `groupMembers {
 const GRAPHQL_COUNT_MRS_QUERY = `groupMembers {
       nodes {
         user {
-          assignedMergeRequests {
+          assignedMergeRequests(state: opened) {
             count
           }
         }
