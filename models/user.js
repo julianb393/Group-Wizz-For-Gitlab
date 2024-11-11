@@ -9,9 +9,7 @@ class Users {
     }
 
     allAssignedMRsAsLiElements() {
-        const sortMRs = (mr1, mr2) => {
-            return mr1.updatedDateTime > mr2.updatedDateTime
-        }
+        const sortMRs = (mr1, mr2) => mr1.updatedDateTime < mr2.updatedDateTime ? 1 : -1
         return this.users.map(user => user.assignedMergeRequests.mergeRequests).flat().sort(sortMRs).map(mr => mr.toLiElement())
     }
 
