@@ -41,21 +41,44 @@ const GRAPHQL_GROUP_MEMBERS_QUERY = `groupMembers {
     }
 `.replaceAll("\n", "")
 
-const Q2 = "query { currentUser { name } }";
+const GRAPHQL_COUNT_MRS_QUERY = `groupMembers {
+      nodes {
+        user {
+          assignedMergeRequests {
+            count
+          }
+        }
+      }
+    }
+`.replaceAll("\n", "")
 
 const GITLAB_GRAPHQL_ENDPOINT = "api/graphql"
 
 async function getUserToAllMergeRequests(groupFullPath) {
 
-    const query = `query { group(fullPath: "${groupFullPath}") { ${GRAPHQL_GROUP_MEMBERS_QUERY} } }`
+  const query = `query { group(fullPath: "${groupFullPath}") { ${GRAPHQL_GROUP_MEMBERS_QUERY} } }`
 
-    const response = await fetch(`https://gitlab.com/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
-        {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        })
+  const response = await fetch(`https://gitlab.com/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    })
 
-    const assignedUsers = new Users(await response.json())
-    return assignedUsers
+  const assignedUsers = new Users(await response.json())
+  return assignedUsers
+}
 
-} 
+async function getMergeRequestCountForGroupMembers(groupFullPath) {
+  let count = 0
+
+  const query = `query { group(fullPath: "${groupFullPath}") { ${GRAPHQL_COUNT_MRS_QUERY} } }`
+
+  const response = await fetch(`https://gitlab.com/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    })
+
+  await response.json().then(json => json.data.group.groupMembers.nodes.forEach(node => count += node.user.assignedMergeRequests.count))
+  return count
+}
