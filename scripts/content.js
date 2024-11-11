@@ -42,7 +42,17 @@ function allMemberMergeRequests(contentBody, hostname) {
         if (!setOthersTabItemActive(allMemberMRsA)) return
 
         // Remove previous tabs contents we don't need.
-        contentBody.replaceChildren(...[...contentBody.children].slice(0, 2))
+
+        // The filter/sort bar
+        contentBody.removeChild(contentBody.getElementsByClassName("issues-filters")[0])
+
+        // The issues list
+        const issuingList = contentBody.getElementsByClassName("content-list mr-list issuable-list")[0]
+        if (issuingList) contentBody.removeChild(issuingList)
+
+        // No listings section
+        const emptySection = contentBody.getElementsByTagName("section")[0]
+        if (emptySection) contentBody.removeChild(emptySection)
 
         // No merge requests to display
         if (badgeCounter.textContent == 0) {
