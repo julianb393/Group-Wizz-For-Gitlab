@@ -1,5 +1,5 @@
 
-function allMemberMergeRequests(contentBody) {
+function allMemberMergeRequests(contentBody, hostname) {
     const tabList = document.getElementsByClassName("issues-state-filters gl-border-b-0 gl-grow nav gl-tabs-nav")[0]
 
     const allMemberMRsLi = document.createElement("li")
@@ -32,13 +32,9 @@ function allMemberMergeRequests(contentBody) {
     allMemberMRsLi.appendChild(allMemberMRsA)
     tabList.appendChild(allMemberMRsLi)
 
-    // Remove Top Area search/filter
-
-
-
     // Get number of merge requests
     const groupFullPath = parseGroupFullPath(document.getElementsByClassName("gl-breadcrumb-item")[0].firstElementChild.href)
-    getMergeRequestCountForGroupMembers(groupFullPath).then(count => badgeCounter.textContent = count)
+    getMergeRequestCountForGroupMembers(hostname, groupFullPath).then(count => badgeCounter.textContent = count)
 
     allMemberMRsLi.addEventListener("click", () => {
 
@@ -59,7 +55,7 @@ function allMemberMergeRequests(contentBody) {
         mrListings.replaceChildren(document.createTextNode("Loading..."))
         contentBody.appendChild(mrListings)
 
-        getUserToAllMergeRequests(groupFullPath).then(users => {
+        getUserToAllMergeRequests(hostname, groupFullPath).then(users => {
             const liElems = users.allAssignedMRsAsLiElements()
             mrListings.replaceChildren(...liElems)
         })
@@ -175,6 +171,15 @@ function parseGroupFullPath(url) {
     return url.substring(index + 1);
 }
 
+function getHostname() {
+    const metaUrl = document.head.querySelector("[content^='https://'][content*='gitlab'][content*='/groups']") ?? null
+    if (metaUrl == null) return url
+    return (metaUrl.content.split("https://")[1]).split("/groups")[0]
+
+}
+
 const contentBody = document.getElementById("content-body")
-if (!contentBody) exit(0);
-allMemberMergeRequests(contentBody)
+const hostname = getHostname()
+if (!contentBody || !hostname) exit(0);
+console.log(hostname)
+allMemberMergeRequests(contentBody, hostname)

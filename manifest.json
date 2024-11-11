@@ -19,7 +19,10 @@
                 "scripts/content.js"
             ],
             "matches": [
-                "https://gitlab.com/groups/*/merge_requests*"
+                "https://*/groups/*/merge_requests*"
+            ],
+            "include_globs": [
+                "https://*gitlab*.*/groups/*/merge_requests*"
             ]
         }
     ]

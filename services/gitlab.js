@@ -54,11 +54,11 @@ const GRAPHQL_COUNT_MRS_QUERY = `groupMembers {
 
 const GITLAB_GRAPHQL_ENDPOINT = "api/graphql"
 
-async function getUserToAllMergeRequests(groupFullPath) {
+async function getUserToAllMergeRequests(hostname, groupFullPath) {
 
   const query = `query { group(fullPath: "${groupFullPath}") { ${GRAPHQL_GROUP_MEMBERS_QUERY} } }`
 
-  const response = await fetch(`https://gitlab.com/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
+  const response = await fetch(`https://${hostname}/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" }
@@ -68,12 +68,12 @@ async function getUserToAllMergeRequests(groupFullPath) {
   return assignedUsers
 }
 
-async function getMergeRequestCountForGroupMembers(groupFullPath) {
+async function getMergeRequestCountForGroupMembers(hostname, groupFullPath) {
   let count = 0
 
   const query = `query { group(fullPath: "${groupFullPath}") { ${GRAPHQL_COUNT_MRS_QUERY} } }`
 
-  const response = await fetch(`https://gitlab.com/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
+  const response = await fetch(`https://${hostname}/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" }
