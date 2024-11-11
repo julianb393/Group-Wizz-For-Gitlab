@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "GitLab MR Ext",
+    "name": "GitLab Group Wizz",
     "version": "1.0",
     "description": "View group members other merge requests",
     "icons": {
