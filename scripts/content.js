@@ -191,5 +191,4 @@ function getHostname() {
 const contentBody = document.getElementById("content-body")
 const hostname = getHostname()
 if (!contentBody || !hostname) exit(0);
-console.log(hostname)
 allMemberMergeRequests(contentBody, hostname)
