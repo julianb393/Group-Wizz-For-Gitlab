@@ -27,6 +27,9 @@ class MergeRequest {
         this.updatedDateTime = mrJSON.updatedAt;
         this.author = new User(mrJSON.author)
         this.reviewers = mrJSON.reviewers?.nodes.map(node => new User(node))
+        this.closedAt = mrJSON.closedAt
+        this.milestoneDueDate = mrJSON.milestone?.dueDate
+        this.popularity = mrJSON.upvotes
     }
 
     toLiElement() {
