@@ -31,7 +31,6 @@ class MergeRequest {
         this.milestone = mrJSON.milestone?.title
         this.milestoneDueDate = mrJSON.milestone?.dueDate
         this.projectMilestoneUrl = mrJSON.project?.webUrl + `?milestone_title=${this.milestone}`
-        this.popularity = mrJSON.upvotes
         this.upvotes = mrJSON.upvotes
         this.downvotes = mrJSON.downvotes
     }

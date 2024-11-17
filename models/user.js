@@ -8,8 +8,8 @@ const SORT_BY = Object.freeze({
     "Updated date desc": (mr1, mr2) => mr1.updatedDateTime < mr2.updatedDateTime ? 1 : -1,
     "Milestone due date asc": (mr1, mr2) => mr1.milestone_due_date > mr2.milestone_due_date ? 1 : -1,
     "Milestone due date desc": (mr1, mr2) => mr1.milestone_due_date < mr2.milestone_due_date ? 1 : -1,
-    "Popularity asc": (mr1, mr2) => mr1.populatority > mr2.populatority ? 1 : -1,
-    "Popularity desc": (mr1, mr2) => mr1.populatority < mr2.populatority ? 1 : -1,
+    "Popularity asc": (mr1, mr2) => mr1.upvotes > mr2.upvotes ? 1 : -1,
+    "Popularity desc": (mr1, mr2) => mr1.upvotes < mr2.upvotes ? 1 : -1,
     "Label priority": null,
     "Title asc": (mr1, mr2) => mr1.title > mr2.title ? 1 : -1,
     "Title desc": (mr1, mr2) => mr1.title < mr2.title ? 1 : -1
