@@ -32,6 +32,14 @@ const MERGE_REQUEST_TEMPLATE = (new DOMParser).parseFromString(`<li class="merge
                             <span class="author">TODO</span>
                         </a>
                     </span>
+                    <span id="template-milestone-wrapper" class="issuable-milestone gl-inline-block">
+                        <a id="template-milestone-link" class="!gl-text-subtle" data-html="true" data-toggle="tooltip" data-title="Milestone" href=TODO/>
+                        <svg class="s12 gl-align-text-bottom" data-testid="milestone-icon">
+                            <use href="/assets/icons-8791a66659d025e0a4c801978c79a1fbd82db1d27d85f044a35728ea7cf0ae80.svg#milestone"/>
+                        </svg>
+                        <span id="template-milestone">TODO</span>
+                        </a>
+                    </span>
                 </span>
             </div>
         </div>
@@ -58,6 +66,18 @@ const MERGE_REQUEST_TEMPLATE = (new DOMParser).parseFromString(`<li class="merge
                             loading="lazy"
                             data-testid="js-lazy-loaded-content"></a>
 
+                </li>
+                <li id="template-upvotes-wrapper" class="gl-block has-tooltip !gl-mr-0" data-testid="issuable-upvotes" title="Upvotes">
+                    <svg class="s16 gl-align-middle" data-testid="thumb-up-icon">
+                        <use href="/assets/icons-8791a66659d025e0a4c801978c79a1fbd82db1d27d85f044a35728ea7cf0ae80.svg#thumb-up"/>
+                    </svg>
+                    <span id="template-upvotes">TODO<span>
+                </li>
+                <li id="template-downvotes-wrapper" class="gl-block has-tooltip !gl-mr-0" data-testid="issuable-downvotes" title="Downvotes">
+                    <svg class="s16 gl-align-middle" data-testid="thumb-down-icon">
+                        <use href="/assets/icons-8791a66659d025e0a4c801978c79a1fbd82db1d27d85f044a35728ea7cf0ae80.svg#thumb-down"/>
+                    </svg>
+                    <span id="template-downvotes">TODO<span>
                 </li>
 
             </ul>

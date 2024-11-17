@@ -28,8 +28,12 @@ class MergeRequest {
         this.author = new User(mrJSON.author)
         this.reviewers = mrJSON.reviewers?.nodes.map(node => new User(node))
         this.closedAt = mrJSON.closedAt
+        this.milestone = mrJSON.milestone?.title
         this.milestoneDueDate = mrJSON.milestone?.dueDate
+        this.projectMilestoneUrl = mrJSON.project?.webUrl + `?milestone_title=${this.milestone}`
         this.popularity = mrJSON.upvotes
+        this.upvotes = mrJSON.upvotes
+        this.downvotes = mrJSON.downvotes
     }
 
     toLiElement() {
@@ -81,6 +85,27 @@ class MergeRequest {
             reviewer.title = `Review requested from ${this.reviewers[i].name}`
             reviewer.href = this.reviewers[i].webPath
             reviewer.firstElementChild.src = this.reviewers[i].avatarUrl
+        }
+
+
+        if (this.upvotes == 0) template.getElementById("template-upvotes-wrapper").remove()
+        else template.getElementById("template-upvotes").textContent = this.upvotes
+
+        if (this.downvotes == 0) template.getElementById("template-downvotes-wrapper").remove()
+        else template.getElementById("template-downvotes").textContent = this.downvotes
+
+        if (!this.milestone) {
+            template.getElementById("template-milestone-wrapper").remove()
+        }
+        else {
+            const milestoneLink = template.getElementById("template-milestone-link")
+            milestoneLink.href = this.projectMilestoneUrl
+            if (this.milestoneDueDate) {
+                const milestoneDueDate = new Date(this.milestoneDueDate)
+                const dateTitle = `${milestoneDueDate.toLocaleString('default', { month: 'short' })} ${milestoneDueDate.getDate()}, ${milestoneDueDate.getFullYear()}`
+                milestoneLink.setAttribute("data-title", milestoneDueDate < new Date() ? dateTitle + " (<strong>Past due</strong>)" : dateTitle)
+            }
+            template.getElementById("template-milestone").textContent = this.milestone
         }
 
         return template.getElementById("merge_request_template")

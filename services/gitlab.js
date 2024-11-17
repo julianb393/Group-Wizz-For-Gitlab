@@ -30,20 +30,10 @@ const GRAPHQL_MRS_QUERY_BODY = `nodes {
                 title
               }
               upvotes
+              downvotes
             }`
 
 const GRAPHQL_COUNT_MRS_QUERY_BODY = "count"
-
-// `groupMembers {
-//       nodes {
-//         user {
-//           assignedMergeRequests(state: opened) {
-//             count
-//           }
-//         }
-//       }
-//     }
-// `.replaceAll("\n", "")
 
 const GITLAB_GRAPHQL_ENDPOINT = "api/graphql"
 
@@ -125,8 +115,6 @@ function filterAsignee(username, assignee) {
 async function getUserToAllMergeRequests(params = {}) {
 
   const filters = convertParamsToGRAPHQL(params)
-  console.log(filters)
-
   const query = `query { 
     group(fullPath: "${GROUP_FULL_PATH}") {
       groupMembers {
@@ -145,8 +133,6 @@ async function getUserToAllMergeRequests(params = {}) {
       } 
     } 
   }`.replaceAll("\n", "")
-
-  console.log(query)
 
   const response = await fetch(`https://${HOSTNAME}/${GITLAB_GRAPHQL_ENDPOINT}?query=${query}`,
     {
