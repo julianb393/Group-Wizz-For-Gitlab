@@ -1,3 +1,5 @@
+const BADGE_COUNTER_ID = "all member mrs badge counter"
+
 function allMemberMergeRequests(contentBody) {
     const tabList = document.getElementsByClassName("issues-state-filters gl-border-b-0 gl-grow nav gl-tabs-nav")[0]
 
@@ -17,6 +19,7 @@ function allMemberMergeRequests(contentBody) {
     badgeCounterWrapper.className = "gl-badge badge badge-pill badge-muted gl-tab-counter-badge gl-hidden sm:gl-inline-flex"
 
     const badgeCounter = document.createElement("span")
+    badgeCounter.id = BADGE_COUNTER_ID
     badgeCounter.className = "gl-badge-content"
     badgeCounter.textContent = 0
     badgeCounterWrapper.appendChild(badgeCounter)
@@ -30,8 +33,11 @@ function allMemberMergeRequests(contentBody) {
     allMemberMRsLi.appendChild(allMemberMRsA)
     tabList.appendChild(allMemberMRsLi)
 
+    const filterForm = document.getElementsByClassName("filter-form js-filter-form gl-w-full")[0]
+    const filters = getFilters(filterForm)
+
     // Get number of merge requests
-    getMergeRequestCountForGroupMembers().then(count => badgeCounter.textContent = count)
+    getMergeRequestCountForGroupMembers(filters).then(count => badgeCounter.textContent = count)
 
     allMemberMRsLi.addEventListener("click", () => {
 
@@ -59,20 +65,76 @@ function allMemberMergeRequests(contentBody) {
         mrListings.replaceChildren(document.createTextNode("Loading..."))
         contentBody.appendChild(mrListings)
 
-        // The sort buttons
+        // The filter and sort fields
+        modifyFilterSection(mrListings)
         modifySortSection(mrListings)
         modifyOrderButton()
 
-        // The filter bar
-
-        getUserToAllMergeRequests().then(users => {
+        // const filters = getFilters(filterForm)
+        getUserToAllMergeRequests(filters).then(users => {
             const sortBy = getSortByField()
             const order = getOrderByField()
             const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
-            mrListings.replaceChildren(...liElems)
+            if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
+            else mrListings.replaceChildren(...liElems)
+            document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
         })
 
     })
+}
+
+function setBadgeCounter(count) {
+
+}
+
+function getFilters(form) {
+    const filterElems = form.getElementsByClassName("tokens-container list-unstyled")[0]
+    const filters = {}
+
+    for (let i = 0; i < filterElems.children.length - 1; i++) {
+        const currElem = filterElems.children[i]
+        const key = currElem.getElementsByClassName(" name")[0].textContent.trim()
+        const op = currElem.getElementsByClassName("operator")[0].textContent.trim()
+        const valueContainer = currElem.getElementsByClassName("value-container")[0]
+        const value = valueContainer.getAttribute("data-original-value")
+            ? valueContainer.getAttribute("data-original-value").trim()
+            : valueContainer?.firstElementChild.textContent.trim()
+        if (currElem && key && op && value) filters[key] = (op == "=" ? "" : "!") + value
+    }
+    return filters
+}
+
+function modifyFilterSection(mrListings) {
+    const filterForm = document.getElementsByClassName("filter-form js-filter-form gl-w-full")[0]
+    filterForm.addEventListener("keydown", (event) => {
+        if (event.key === 'Enter') {
+            event.stopPropagation()
+            event.preventDefault()
+
+            const sortBy = getSortByField()
+            const order = getOrderByField()
+            const filters = getFilters(filterForm)
+            getUserToAllMergeRequests(filters).then(users => {
+                const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
+                document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
+                if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
+                else mrListings.replaceChildren(...liElems)
+            })
+
+        }
+    }, true)
+
+    const clearButton = filterForm.getElementsByClassName("gl-button btn btn-icon btn-sm btn-default btn-default-tertiary clear-search hidden gl-self-center gl-mr-1 has-tooltip")[0]
+    if (!clearButton) return
+    clearButton.addEventListener("click", (event) => {
+        event.stopPropagation()
+        event.preventDefault()
+        const activeFilters = filterForm.getElementsByClassName("filtered-search-token")
+        const filterList = activeFilters[0].parentElement
+        const remainder = filterList.getElementsByClassName("input-token")[0]
+        filterList.replaceChildren(remainder)
+    }, true)
+
 }
 
 function modifyOrderButton() {
@@ -117,7 +179,6 @@ function modifySortSection(mrListings) {
     for (let i in sortFieldOptions.children) {
         const currItem = sortFieldOptions.children[i]
         if (currItem.className != "gl-new-dropdown-item") continue
-        // TODO: send GET Request to get MR results with specific sorting
         currItem.addEventListener("click", (event) => {
             // Stops the page redirect when sort orders are clicked
             event.stopPropagation()
@@ -134,11 +195,17 @@ function modifySortSection(mrListings) {
             toggleOpenSortFieldDropDown(sortFieldButton, currSelectedSortOptions)
             sortFieldButton.focus()
 
+            const filterForm = document.getElementsByClassName("filter-form js-filter-form gl-w-full")[0]
+
             const sortBy = getSortByField()
             const order = getOrderByField()
-            getUserToAllMergeRequests().then(users => {
+            const filters = getFilters(filterForm)
+            getUserToAllMergeRequests(filters).then(users => {
                 const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
-                mrListings.replaceChildren(...liElems)
+                document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
+                if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
+                else mrListings.replaceChildren(...liElems)
+
             })
 
         }, true)
