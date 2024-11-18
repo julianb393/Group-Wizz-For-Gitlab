@@ -31,6 +31,10 @@ const GRAPHQL_MRS_QUERY_BODY = `nodes {
               }
               upvotes
               downvotes
+              headPipeline {
+                path
+                status
+              }
             }`
 
 const GRAPHQL_COUNT_MRS_QUERY_BODY = "count"

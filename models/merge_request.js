@@ -33,6 +33,8 @@ class MergeRequest {
         this.projectMilestoneUrl = mrJSON.project?.webUrl + `?milestone_title=${this.milestone}`
         this.upvotes = mrJSON.upvotes
         this.downvotes = mrJSON.downvotes
+        this.pipelineStatus = mrJSON.headPipeline?.status
+        this.pipelinePath = mrJSON.headPipeline?.webpath
     }
 
     toLiElement() {
@@ -86,7 +88,6 @@ class MergeRequest {
             reviewer.firstElementChild.src = this.reviewers[i].avatarUrl
         }
 
-
         if (this.upvotes == 0) template.getElementById("template-upvotes-wrapper").remove()
         else template.getElementById("template-upvotes").textContent = this.upvotes
 
@@ -105,6 +106,35 @@ class MergeRequest {
                 milestoneLink.setAttribute("data-title", milestoneDueDate < new Date() ? dateTitle + " (<strong>Past due</strong>)" : dateTitle)
             }
             template.getElementById("template-milestone").textContent = this.milestone
+        }
+
+        if (!this.pipelineStatus) {
+            template.getElementById("template-pipeline-success-wrapper").remove()
+            template.getElementById("template-pipeline-running-wrapper").remove()
+            template.getElementById("template-pipeline-failed-wrapper").remove()
+        }
+        else {
+            switch (this.pipelineStatus) {
+                case "SUCCESS":
+                    template.getElementById("template-pipeline-running-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-wrapper").remove()
+                    template.getElementById("template-pipeline-success-link").href = this.pipelinePath
+                    break
+                case "RUNNING":
+                    template.getElementById("template-pipeline-success-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-wrapper").remove()
+                    template.getElementById("template-pipeline-running-link").href = this.pipelinePath
+                case "FAILED":
+                    template.getElementById("template-pipeline-running-wrapper").remove()
+                    template.getElementById("template-pipeline-success-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-link").href = this.pipelinePath
+                    break
+                default:
+                    template.getElementById("template-pipeline-success-wrapper").remove()
+                    template.getElementById("template-pipeline-running-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-wrapper").remove()
+                    break;
+            }
         }
 
         return template.getElementById("merge_request_template")
