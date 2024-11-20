@@ -136,6 +136,16 @@ function modifyFilterSection(mrListings) {
         const filterList = activeFilters[0].parentElement
         const remainder = filterList.getElementsByClassName("input-token")[0]
         filterList.replaceChildren(remainder)
+
+        getUserToAllMergeRequests().then(users => {
+            const sortBy = getSortByField()
+            const order = getOrderByField()
+            const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
+            document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
+            if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
+            else mrListings.replaceChildren(...liElems)
+        })
+        clearButton.classList.add("hidden")
     }, true)
 
 }
