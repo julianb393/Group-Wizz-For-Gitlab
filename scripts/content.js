@@ -119,6 +119,9 @@ function modifyFilterSection(mrListings) {
                 document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
                 if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
                 else mrListings.replaceChildren(...liElems)
+                // Gitlab auto-triggers the dropdown panel to show up again, this forces it shut after we got the results.
+                const dropDown = document.getElementById("js-dropdown-hint")
+                dropDown.style.display = "none"
             })
 
         }
