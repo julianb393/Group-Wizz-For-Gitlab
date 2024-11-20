@@ -11,6 +11,10 @@ class MergeRequests {
     toLiElements() {
         return this.mergeRequests.map((mr) => mr.toLiElement())
     }
+
+    getAllMilestones() {
+        return [...new Set(this.mergeRequests.filter(mr => mr.milestone).map(mr => mr.milestone))]
+    }
 }
 
 class MergeRequest {
@@ -27,6 +31,14 @@ class MergeRequest {
         this.updatedDateTime = mrJSON.updatedAt;
         this.author = new User(mrJSON.author)
         this.reviewers = mrJSON.reviewers?.nodes.map(node => new User(node))
+        this.closedAt = mrJSON.closedAt
+        this.milestone = mrJSON.milestone?.title
+        this.milestoneDueDate = mrJSON.milestone?.dueDate
+        this.projectMilestoneUrl = mrJSON.project?.webUrl + `?milestone_title=${this.milestone}`
+        this.upvotes = mrJSON.upvotes
+        this.downvotes = mrJSON.downvotes
+        this.pipelineStatus = mrJSON.headPipeline?.status
+        this.pipelinePath = mrJSON.headPipeline?.webpath
     }
 
     toLiElement() {
@@ -78,6 +90,55 @@ class MergeRequest {
             reviewer.title = `Review requested from ${this.reviewers[i].name}`
             reviewer.href = this.reviewers[i].webPath
             reviewer.firstElementChild.src = this.reviewers[i].avatarUrl
+        }
+
+        if (this.upvotes == 0) template.getElementById("template-upvotes-wrapper").remove()
+        else template.getElementById("template-upvotes").textContent = this.upvotes
+
+        if (this.downvotes == 0) template.getElementById("template-downvotes-wrapper").remove()
+        else template.getElementById("template-downvotes").textContent = this.downvotes
+
+        if (!this.milestone) {
+            template.getElementById("template-milestone-wrapper").remove()
+        }
+        else {
+            const milestoneLink = template.getElementById("template-milestone-link")
+            milestoneLink.href = this.projectMilestoneUrl
+            if (this.milestoneDueDate) {
+                const milestoneDueDate = new Date(this.milestoneDueDate)
+                const dateTitle = `${milestoneDueDate.toLocaleString('default', { month: 'short' })} ${milestoneDueDate.getDate()}, ${milestoneDueDate.getFullYear()}`
+                milestoneLink.setAttribute("data-title", milestoneDueDate < new Date() ? dateTitle + " (<strong>Past due</strong>)" : dateTitle)
+            }
+            template.getElementById("template-milestone").textContent = this.milestone
+        }
+
+        if (!this.pipelineStatus) {
+            template.getElementById("template-pipeline-success-wrapper").remove()
+            template.getElementById("template-pipeline-running-wrapper").remove()
+            template.getElementById("template-pipeline-failed-wrapper").remove()
+        }
+        else {
+            switch (this.pipelineStatus) {
+                case "SUCCESS":
+                    template.getElementById("template-pipeline-running-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-wrapper").remove()
+                    template.getElementById("template-pipeline-success-link").href = this.pipelinePath
+                    break
+                case "RUNNING":
+                    template.getElementById("template-pipeline-success-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-wrapper").remove()
+                    template.getElementById("template-pipeline-running-link").href = this.pipelinePath
+                case "FAILED":
+                    template.getElementById("template-pipeline-running-wrapper").remove()
+                    template.getElementById("template-pipeline-success-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-link").href = this.pipelinePath
+                    break
+                default:
+                    template.getElementById("template-pipeline-success-wrapper").remove()
+                    template.getElementById("template-pipeline-running-wrapper").remove()
+                    template.getElementById("template-pipeline-failed-wrapper").remove()
+                    break;
+            }
         }
 
         return template.getElementById("merge_request_template")

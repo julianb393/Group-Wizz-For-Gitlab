@@ -1,9 +1,13 @@
+const ICONS_LOCATION = document.head.querySelector("script").textContent.match("gon.sprite_icons=\"\/assets\/icons-[a-z0-9]*\.svg\"")[0]
+
+const ICONS_PATH = ICONS_LOCATION.substring(ICONS_LOCATION.indexOf("/assets/icons-"), ICONS_LOCATION.length - 1)
+
 const MERGE_REQUEST_TEMPLATE = (new DOMParser).parseFromString(`<li class="merge-request" data-id="TODO" data-labels="[]" id = "merge_request_template" >
     <div class="issuable-info-container gl-flex-col md:gl-flex-row gl-gap-3">
         <div class="issuable-main-info !gl-mr-0">
             <div class="merge-request-title title">
                 <span class="merge-request-title-text js-onboarding-mr-item">
-
+ 
                     <a id="template-title" class="js-prefetch-document"
                         href="TODO">TODO</a>
                 </span>
@@ -32,6 +36,14 @@ const MERGE_REQUEST_TEMPLATE = (new DOMParser).parseFromString(`<li class="merge
                             <span class="author">TODO</span>
                         </a>
                     </span>
+                    <span id="template-milestone-wrapper" class="issuable-milestone gl-inline-block">
+                        <a id="template-milestone-link" class="!gl-text-subtle" data-html="true" data-toggle="tooltip" data-title="Milestone" href=TODO/>
+                        <svg class="s12 gl-align-text-bottom" data-testid="milestone-icon">
+                            <use href="${ICONS_PATH}#milestone"/>
+                        </svg>
+                        <span id="template-milestone">TODO</span>
+                        </a>
+                    </span>
                 </span>
             </div>
         </div>
@@ -46,7 +58,7 @@ const MERGE_REQUEST_TEMPLATE = (new DOMParser).parseFromString(`<li class="merge
                             src="TODO"
                             loading="lazy"
                             data-testid="js-lazy-loaded-content"></a>
-
+ 
                 </li>
                 <li id="template-reviewer-li" class="gl-flex issuable-reviewers !gl-mr-0">
                     <a id="template-reviewer" class="author-link has-tooltip"
@@ -57,9 +69,48 @@ const MERGE_REQUEST_TEMPLATE = (new DOMParser).parseFromString(`<li class="merge
                             src="TODO"
                             loading="lazy"
                             data-testid="js-lazy-loaded-content"></a>
-
+ 
                 </li>
-
+                <li id="template-upvotes-wrapper" class="gl-block has-tooltip !gl-mr-0" data-testid="issuable-upvotes" title="Upvotes">
+                    <svg class="s16 gl-align-middle" data-testid="thumb-up-icon">
+                        <use href="${ICONS_PATH}#thumb-up"/>
+                    </svg>
+                    <span id="template-upvotes">TODO<span>
+                </li>
+                <li id="template-downvotes-wrapper" class="gl-block has-tooltip !gl-mr-0" data-testid="issuable-downvotes" title="Downvotes">
+                    <svg class="s16 gl-align-middle" data-testid="thumb-down-icon">
+                        <use href="${ICONS_PATH}#thumb-down"/>
+                    </svg>
+                    <span id="template-downvotes">TODO<span>
+                </li>
+                <li id="template-pipeline-success-wrapper" class="issuable-pipeline-status gl-flex">
+                    <a id="template-pipeline-success-link" href="TODO" class="ci-icon ci-icon-variant-success gl-inline-flex gl-items-center gl-text-sm gl-flex" title="Pipeline: passed" data-toggle="tooltip" data-placement="left" data-container="body" data-testid="ci-icon">
+                        <span class="js-ci-status-badge-legacy ci-icon-gl-icon-wrapper">
+                            <svg class="s24 gl-icon" data-testid="status_success_borderless-icon">
+                                <use href="${ICONS_PATH}#status_success_borderless"/>
+                            </svg>
+                        </span>
+                    </a>
+ 
+                </li>
+                <li id="template-pipeline-running-wrapper" class="issuable-pipeline-status gl-flex">
+                    <a id="template-pipeline-running-link" href="TODO" class="ci-icon ci-icon-variant-info gl-inline-flex gl-items-center gl-text-sm gl-flex" title="Pipeline: running" data-toggle="tooltip" data-placement="left" data-container="body" data-testid="ci-icon">
+                        <span class="js-ci-status-badge-legacy ci-icon-gl-icon-wrapper">
+                            <svg class="s24 gl-icon" data-testid="status_running_borderless-icon">
+                                <use href="${ICONS_PATH}#status_running_borderless">
+                            </svg>
+                        </span>
+                    </a>
+                </li>
+                <li id="template-pipeline-failed-wrapper" class="issuable-pipeline-status gl-flex">
+                    <a id="template-pipeline-failed-link" href="TODO" class="ci-icon ci-icon-variant-danger gl-inline-flex gl-items-center gl-text-sm gl-flex" title="Pipeline: failed" data-toggle="tooltip" data-placement="left" data-container="body" data-testid="ci-icon">
+                        <span class="js-ci-status-badge-legacy ci-icon-gl-icon-wrapper">
+                            <svg class="s24 gl-icon" data-testid="status_failed_borderless-icon">
+                                <use href="${ICONS_PATH}#status_failed_borderless">
+                            </svg>
+                        </span>
+                    </a>
+                </li>
             </ul>
             <div
                 class="issuable-updated-at gl-self-end gl-hidden sm:gl-inline-block gl-text-gray-500">
