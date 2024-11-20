@@ -139,8 +139,8 @@ function modifyFilterSection(mrListings) {
 
 function modifyMilestonesFilter(milestones) {
     const milestoneDropdown = document.getElementById("js-dropdown-milestone")
-    const dropdownListNew = document.createElement("ul")
-    dropdownListNew.className = "filter-dropdown"
+    const dropdownListOther = document.createElement("ul")
+    dropdownListOther.className = "filter-dropdown"
 
     for (let milestone of milestones) {
         const milestoneLi = document.createElement("li")
@@ -157,20 +157,26 @@ function modifyMilestonesFilter(milestones) {
 
         milestoneButton.appendChild(milestoneSpan)
         milestoneLi.appendChild(milestoneButton)
-        dropdownListNew.appendChild(milestoneLi)
+        dropdownListOther.appendChild(milestoneLi)
     }
 
     const observer = new MutationObserver((mutations) => {
         mutations.forEach(mutation => {
 
-            if (mutation.type !== "attributes") return
-
-            if (mutation.target.getAttribute("data-dropdown-active") === "true") {
-                milestoneDropdown.appendChild(dropdownListNew)
+            if (mutation.type === "attributes") {
+                if (mutation.target.getAttribute("data-dropdown-active") === "true") {
+                    milestoneDropdown.appendChild(dropdownListOther)
+                }
+            }
+            else if (mutation.type === "childList") {
+                if (mutation.target.children[1].children.length > 0) {
+                    mutation.target.children[1].replaceChildren()
+                }
             }
         })
     })
-    observer.observe(milestoneDropdown, { attributes: true, childList: false, subtree: false, attributeFilter: ["data-dropdown-active"] })
+
+    observer.observe(milestoneDropdown, { attributes: true, childList: true, subtree: false, attributeFilter: ["data-dropdown-active"] })
 }
 
 function modifyOrderButton() {

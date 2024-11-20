@@ -18,7 +18,6 @@ const SORT_BY = Object.freeze({
 class Users {
 
     constructor(graphqlJSON) {
-        console.log(graphqlJSON)
         this.users = []
         this.parseGraphqlJSON(graphqlJSON.data?.group.groupMembers)
     }
