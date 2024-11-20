@@ -70,21 +70,21 @@ function allMemberMergeRequests(contentBody) {
         modifySortSection(mrListings)
         modifyOrderButton()
 
+        // TODO: Disable recent filters button for now
+        document.getElementsByClassName("dropdown-menu-toggle gl-button btn btn-default filtered-search-history-dropdown-toggle-button")[0].disabled = true
+
         // const filters = getFilters(filterForm)
         getUserToAllMergeRequests(filters).then(users => {
             const sortBy = getSortByField()
             const order = getOrderByField()
             const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
+            modifyMilestonesFilter(users.getAllMilestones())
             if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
             else mrListings.replaceChildren(...liElems)
             document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
         })
 
     })
-}
-
-function setBadgeCounter(count) {
-
 }
 
 function getFilters(form) {
@@ -137,6 +137,42 @@ function modifyFilterSection(mrListings) {
 
 }
 
+function modifyMilestonesFilter(milestones) {
+    const milestoneDropdown = document.getElementById("js-dropdown-milestone")
+    const dropdownListNew = document.createElement("ul")
+    dropdownListNew.className = "filter-dropdown"
+
+    for (let milestone of milestones) {
+        const milestoneLi = document.createElement("li")
+        milestoneLi.className = "filter-dropdown-item"
+        milestoneLi.style = "display: block;"
+
+        const milestoneButton = document.createElement("button")
+        milestoneButton.type = "button"
+        milestoneButton.className = "gl-button btn btn-md btn-link js-data-value"
+
+        const milestoneSpan = document.createElement("span")
+        milestoneSpan.className = "gl-button-text"
+        milestoneSpan.textContent = milestone
+
+        milestoneButton.appendChild(milestoneSpan)
+        milestoneLi.appendChild(milestoneButton)
+        dropdownListNew.appendChild(milestoneLi)
+    }
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+
+            if (mutation.type !== "attributes") return
+
+            if (mutation.target.getAttribute("data-dropdown-active") === "true") {
+                milestoneDropdown.appendChild(dropdownListNew)
+            }
+        })
+    })
+    observer.observe(milestoneDropdown, { attributes: true, childList: false, subtree: false, attributeFilter: ["data-dropdown-active"] })
+}
+
 function modifyOrderButton() {
     const orderButton = document.getElementsByClassName("gl-button btn btn-icon btn-md btn-default has-tooltip reverse-sort-btn rspec-reverse-sort")[0]
     const modifiedButton = document.createElement("span")
@@ -154,19 +190,20 @@ function modifyOrderButton() {
 
         modifiedButton.firstChild.setAttribute("data-testid", !isDesc ? "sort-lowest-icon" : "sort-highest-icon")
         modifiedButton.firstChild.firstChild.setAttribute("href", !isDesc
-            ? "/assets/icons-8791a66659d025e0a4c801978c79a1fbd82db1d27d85f044a35728ea7cf0ae80.svg#sort-lowest"
-            : "/assets/icons-8791a66659d025e0a4c801978c79a1fbd82db1d27d85f044a35728ea7cf0ae80.svg#sort-highest")
+            ? `${ICONS_PATH}#sort-lowest`
+            : `${ICONS_PATH}#sort-highest`)
     })
 }
 
 function modifySortSection(mrListings) {
     // Ensure the position of drop down is the same as the others.
-    document.getElementById("base-dropdown-40").style = "left: -122.406px; top: 36px;"
+    const sortButtonGroup = document.getElementsByClassName("gl-new-dropdown gl-new-dropdown js-redirect-listbox btn-group")[0]
+    sortButtonGroup.getElementsByClassName("gl-new-dropdown-panel")[0].style = "left: -122.406px; top: 36px;"
 
-    const sortFieldOptions = document.getElementById("listbox-39")
+    const sortFieldOptions = sortButtonGroup.getElementsByClassName("gl-new-dropdown-contents")[0]
     let currSelectedSortOptions = sortFieldOptions.querySelector("li[aria-selected=true]")
 
-    const sortFieldButton = document.getElementById("dropdown-toggle-btn-38")
+    const sortFieldButton = sortButtonGroup.getElementsByClassName("gl-new-dropdown-toggle")[0]
     const sortFieldButtonText = sortFieldButton.getElementsByClassName("gl-new-dropdown-button-text")[0]
     sortFieldButton.addEventListener("click", (event) => {
         // Manually manage drop down
@@ -213,7 +250,8 @@ function modifySortSection(mrListings) {
 }
 
 function getSortByField() {
-    const sortButton = document.getElementById("dropdown-toggle-btn-38")
+    const sortButtonGroup = document.getElementsByClassName("gl-new-dropdown gl-new-dropdown js-redirect-listbox btn-group")[0]
+    const sortButton = sortButtonGroup.getElementsByClassName("gl-new-dropdown-toggle")[0]
     return sortButton.getElementsByClassName("gl-new-dropdown-button-text")[0].textContent.trim()
 }
 
@@ -225,16 +263,17 @@ function getOrderByField() {
 }
 
 function toggleOpenSortFieldDropDown(sortButton, selectedOption) {
+    const btngroup = document.getElementsByClassName("gl-new-dropdown gl-new-dropdown js-redirect-listbox btn-group")[0]
     if (sortButton.ariaExpanded === "true") {
         sortButton.ariaExpanded = "false"
-        document.getElementById("base-dropdown-40").classList.remove("!gl-block")
-        document.getElementById("listbox-39").classList.remove("top-scrim-visible", "bottom-scrim-visible")
+        btngroup.getElementsByClassName("gl-new-dropdown-panel")[0].classList.remove("!gl-block")
+        btngroup.getElementsByClassName("gl-new-dropdown-contents")[0].classList.remove("top-scrim-visible", "bottom-scrim-visible")
         selectedOption.tabIndex = -1
     }
     else {
         sortButton.ariaExpanded = "true"
-        document.getElementById("base-dropdown-40").classList.add("!gl-block", "gl-absolute")
-        document.getElementById("listbox-39").classList.add("top-scrim-visible", "bottom-scrim-visible")
+        btngroup.getElementsByClassName("gl-new-dropdown-panel")[0].classList.add("!gl-block", "gl-absolute")
+        btngroup.getElementsByClassName("gl-new-dropdown-contents")[0].classList.add("top-scrim-visible", "bottom-scrim-visible")
         selectedOption.tabIndex = 0
         selectedOption.focus()
     }
@@ -279,3 +318,4 @@ function setOthersTabItemActive(othersTabItem) {
 const contentBody = document.getElementById("content-body")
 if (!contentBody) exit(0);
 allMemberMergeRequests(contentBody)
+

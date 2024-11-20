@@ -34,16 +34,20 @@ class Users {
     /**
      * Outputs all merge request results as li DOM elements, where the listing is sorted
      * by sortBy in the order of asc or desc.
-     * 
+     *
      * @param {String} sortBy The merge request field to sort the results by
      * @param {String} order  asc or desc
-     * @returns 
+     * @returns
      */
     allAssignedMRsAsLiElements(sortBy, order) {
         return this.users.map(user => user.assignedMergeRequests.mergeRequests)
             .flat()
             .sort(SORT_BY[`${sortBy} ${order}`])
             .map(mr => mr.toLiElement())
+    }
+
+    getAllMilestones() {
+        return [... new Set(this.users.map(user => user.assignedMergeRequests.getAllMilestones()).flat())]
     }
 }
 

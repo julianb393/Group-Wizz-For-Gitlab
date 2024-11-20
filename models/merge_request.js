@@ -11,6 +11,10 @@ class MergeRequests {
     toLiElements() {
         return this.mergeRequests.map((mr) => mr.toLiElement())
     }
+
+    getAllMilestones() {
+        return [...new Set(this.mergeRequests.filter(mr => mr.milestone).map(mr => mr.milestone))]
+    }
 }
 
 class MergeRequest {
