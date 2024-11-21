@@ -62,7 +62,9 @@ function allMemberMergeRequests(contentBody) {
 
         const mrListings = document.createElement("ul")
         mrListings.className = "content-list mr-list issuable-list"
-        mrListings.replaceChildren(document.createTextNode("Loading..."))
+
+        mrListings.replaceChildren(createLoadingSpinner())
+
         contentBody.appendChild(mrListings)
 
         // The filter and sort fields
@@ -85,6 +87,13 @@ function allMemberMergeRequests(contentBody) {
         })
 
     })
+}
+
+function createLoadingSpinner() {
+    const loadingSpinner = document.createElement("span")
+    loadingSpinner.style = "display: table; margin: 0 auto; padding: 15px 15px 15px 15px"
+    loadingSpinner.className = "gl-spinner gl-spinner-md gl-spinner-dark"
+    return loadingSpinner
 }
 
 function getFilters(form) {
@@ -114,6 +123,7 @@ function modifyFilterSection(mrListings) {
             const sortBy = getSortByField()
             const order = getOrderByField()
             const filters = getFilters(filterForm)
+            mrListings.replaceChildren(createLoadingSpinner())
             getUserToAllMergeRequests(filters).then(users => {
                 const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
                 document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
@@ -136,6 +146,7 @@ function modifyFilterSection(mrListings) {
         const filterList = activeFilters[0].parentElement
         const remainder = filterList.getElementsByClassName("input-token")[0]
         filterList.replaceChildren(remainder)
+        mrListings.replaceChildren(createLoadingSpinner())
 
         getUserToAllMergeRequests().then(users => {
             const sortBy = getSortByField()
@@ -256,6 +267,7 @@ function modifySortSection(mrListings) {
             const sortBy = getSortByField()
             const order = getOrderByField()
             const filters = getFilters(filterForm)
+            mrListings.replaceChildren(createLoadingSpinner())
             getUserToAllMergeRequests(filters).then(users => {
                 const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
                 document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
