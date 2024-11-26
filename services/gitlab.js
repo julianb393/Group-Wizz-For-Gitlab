@@ -70,7 +70,8 @@ const GRAPHQL_FILTER_KEYS = {
   "source-branch": "sourceBranches",
   "environment": "environmentName",
   "deployed-before": "deployedBefore",
-  "deployed-after": "deployedAfter"
+  "deployed-after": "deployedAfter",
+  "search": "search"
 }
 
 function convertParamsToGRAPHQL(params = {}) {

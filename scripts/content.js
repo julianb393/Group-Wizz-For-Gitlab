@@ -100,8 +100,8 @@ function getFilters(form) {
     const filterElems = form.getElementsByClassName("tokens-container list-unstyled")[0]
     const filters = {}
 
-    for (let i = 0; i < filterElems.children.length - 1; i++) {
-        const currElem = filterElems.children[i]
+    // Filters
+    for (let currElem of filterElems.getElementsByClassName("filtered-search-token")) {
         const key = currElem.getElementsByClassName(" name")[0].textContent.trim()
         const op = currElem.getElementsByClassName("operator")[0].textContent.trim()
         const valueContainer = currElem.getElementsByClassName("value-container")[0]
@@ -110,13 +110,46 @@ function getFilters(form) {
             : valueContainer?.firstElementChild.textContent.trim()
         if (currElem && key && op && value) filters[key] = (op == "=" ? "" : "!") + value
     }
+
+    // Search word
+    const searchElem = filterElems.getElementsByClassName("filtered-search-term")
+    const searchText = filterElems.querySelector("input").value
+    if (searchElem.length != 0) filters["search"] = searchElem[0].firstElementChild.textContent
+    else if (searchText != "") filters["search"] = searchText
+
+    console.log(filters)
+
     return filters
 }
 
 function modifyFilterSection(mrListings) {
+    const dropdowns = document.getElementById("js-dropdown-hint")
     const filterForm = document.getElementsByClassName("filter-form js-filter-form gl-w-full")[0]
     filterForm.addEventListener("keydown", (event) => {
         if (event.key === 'Enter') {
+            event.stopPropagation()
+            event.preventDefault()
+            const sortBy = getSortByField()
+            const order = getOrderByField()
+            const filters = getFilters(filterForm)
+            mrListings.replaceChildren(createLoadingSpinner())
+            getUserToAllMergeRequests(filters).then(users => {
+                const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
+                document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
+                if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
+                else mrListings.replaceChildren(...liElems)
+                // Gitlab auto-triggers the dropdown panel to show up again, this forces it shut after we got the results.
+                dropdowns.style.display = "none"
+            })
+
+        }
+    }, true)
+
+
+    dropdowns.addEventListener("click", (event) => {
+        const searchDropDownStyle = dropdowns.firstElementChild.lastElementChild.style
+        const btnName = event.target.innerHTML.trim().toLowerCase()
+        if (btnName.includes("search")) {
             event.stopPropagation()
             event.preventDefault()
 
@@ -130,11 +163,12 @@ function modifyFilterSection(mrListings) {
                 if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
                 else mrListings.replaceChildren(...liElems)
                 // Gitlab auto-triggers the dropdown panel to show up again, this forces it shut after we got the results.
-                const dropDown = document.getElementById("js-dropdown-hint")
-                dropDown.style.display = "none"
+                dropdowns.style.display = "none"
+                searchDropDownStyle.display = "none"
             })
-
+            searchDropDownStyle.display = "none"
         }
+
     }, true)
 
     const clearButton = filterForm.getElementsByClassName("gl-button btn btn-icon btn-sm btn-default btn-default-tertiary clear-search hidden gl-self-center gl-mr-1 has-tooltip")[0]
@@ -158,7 +192,6 @@ function modifyFilterSection(mrListings) {
         })
         clearButton.classList.add("hidden")
     }, true)
-
 }
 
 function modifyMilestonesFilter(milestones) {
