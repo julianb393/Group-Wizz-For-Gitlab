@@ -77,6 +77,7 @@ const GRAPHQL_FILTER_KEYS = {
 function convertParamsToGRAPHQL(params = {}) {
   const filters = []
   const negatedFilters = []
+  let isDraft = false
   for (let [key, value] of Object.entries(params)) {
     const isNegated = value.charAt(0) == "!"
     let valStartAt = isNegated ? 1 : 0
@@ -92,6 +93,11 @@ function convertParamsToGRAPHQL(params = {}) {
       case "approved-by":
         valStartAt += 1
         break;
+      case "draft": {
+        isDraft = true
+        value = value.substring(valStartAt, valEndAt).toLowerCase() == "yes"
+        break;
+      }
       case "milestone":
         if (value.substring(valStartAt).charAt(0) != "%") break;
         valStartAt += 2
@@ -100,9 +106,18 @@ function convertParamsToGRAPHQL(params = {}) {
       default:
         break;
     }
-    isNegated
+    if (!isDraft) {
+      isNegated
       ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS[key]}: "${value.substring(valStartAt, valEndAt)}"`)
       : filters.push(`${GRAPHQL_FILTER_KEYS[key]}: "${value.substring(valStartAt, valEndAt)}"`)
+    }
+    else {
+      // Negated case should never happen for the draft filter
+      isNegated
+        ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS[key]}: ${value}`)
+        : filters.push(`${GRAPHQL_FILTER_KEYS[key]}: ${value}`)
+    }
+
   }
   if (negatedFilters.length != 0) filters.push(" not: " + `{ ${negatedFilters.join(",")} }`)
   if (filters.length != 0) return "," + filters.join(",")
