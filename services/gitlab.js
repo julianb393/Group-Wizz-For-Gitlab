@@ -74,7 +74,6 @@ const GRAPHQL_FILTER_KEYS = {
   "search": "search"
 }
 
-// TODO: For cases where value is None, Any, Upcoming, 
 const GRAPHQL_FILTER_KEYS_WILDCARDS = {
   "reviewer": "reviewerWildcardId",
   "milestone": "milestoneWildcardId"
