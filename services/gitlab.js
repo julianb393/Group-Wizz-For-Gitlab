@@ -131,14 +131,12 @@ function convertParamsToGRAPHQL(params = {}) {
       }
     }
     else {
-      console.log("reached")
       isNegated
         ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS_WILDCARDS[key]}: ${value.substring(1).toUpperCase()}`)
         : filters.push(`${GRAPHQL_FILTER_KEYS_WILDCARDS[key]}: ${value.toUpperCase()}`)
     }
 
   }
-  console.log("my filters: " + filters)
 
   if (negatedFilters.length != 0) filters.push(" not: " + `{ ${negatedFilters.join(",")} }`)
   if (filters.length != 0) return "," + filters.join(",")

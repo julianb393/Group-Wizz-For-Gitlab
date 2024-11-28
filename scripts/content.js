@@ -117,8 +117,6 @@ function getFilters(form) {
     if (searchElem.length != 0) filters["search"] = searchElem[0].firstElementChild.textContent
     else if (searchText != "") filters["search"] = searchText
 
-    console.log(filters)
-
     return filters
 }
 
