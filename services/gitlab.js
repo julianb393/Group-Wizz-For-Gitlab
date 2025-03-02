@@ -102,7 +102,6 @@ function convertParamsToGRAPHQL(params = {}) {
         case "merge-user":
         case "approver":
         case "approved-by":
-          valStartAt += 1
           break;
         case "draft": {
           isDraft = true
@@ -111,8 +110,7 @@ function convertParamsToGRAPHQL(params = {}) {
         }
         case "milestone":
           if (value.substring(valStartAt).charAt(0) != "%") break;
-          valStartAt += 2
-          valEndAt -= 1
+          valStartAt += 1
           break;
         default:
           break;
@@ -139,7 +137,7 @@ function convertParamsToGRAPHQL(params = {}) {
   }
 
   if (negatedFilters.length != 0) filters.push(" not: " + `{ ${negatedFilters.join(",")} }`)
-  if (filters.length != 0) return "," + filters.join(",")
+  if (filters.length != 0) return filters.join(",")
 
   return ""
 }
@@ -153,7 +151,6 @@ function filterAsignee(username, assignee) {
 }
 
 async function getUserToAllMergeRequests(params = {}) {
-
   const filters = convertParamsToGRAPHQL(params)
   const query = `query { 
     group(fullPath: "${GROUP_FULL_PATH}") {
@@ -165,7 +162,7 @@ async function getUserToAllMergeRequests(params = {}) {
             name
             avatarUrl
             webPath
-            assignedMergeRequests(state: opened ${filters}) {
+            assignedMergeRequests(state: opened, ${filters}) {
               ${GRAPHQL_MRS_QUERY_BODY}
             }
           }
@@ -196,7 +193,7 @@ async function getMergeRequestCountForGroupMembers(params = {}) {
         nodes {
           user {
             username
-            assignedMergeRequests(state: opened ${filters}) {
+            assignedMergeRequests(state: opened, ${filters}) {
               ${GRAPHQL_COUNT_MRS_QUERY_BODY}
             }
           }

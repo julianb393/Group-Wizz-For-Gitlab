@@ -1,7 +1,11 @@
 const BADGE_COUNTER_ID = "all member mrs badge counter"
 
+const ALL_NAME_TO_USERNAME = {};
+
+let isFirstClick = true;
+
 function allMemberMergeRequests(contentBody) {
-    const tabList = document.getElementsByClassName("issues-state-filters gl-border-b-0 gl-grow nav gl-tabs-nav")[0]
+    const tabList = document.getElementsByClassName("nav gl-tabs-nav")[0]
 
     const allMemberMRsLi = document.createElement("li")
     allMemberMRsLi.role = "presentation"
@@ -33,7 +37,10 @@ function allMemberMergeRequests(contentBody) {
     allMemberMRsLi.appendChild(allMemberMRsA)
     tabList.appendChild(allMemberMRsLi)
 
-    const filterForm = document.getElementsByClassName("filter-form js-filter-form gl-w-full")[0]
+    // Adds state transitions when selecting other tab items off of allMemberMRsLi.
+    addActiveTabItemStateManager(tabList, allMemberMRsLi)
+
+    const filterForm = document.getElementsByClassName("gl-filtered-search-scrollable")[0]
     const filters = getFilters(filterForm)
 
     // Get number of merge requests
@@ -41,14 +48,15 @@ function allMemberMergeRequests(contentBody) {
 
     allMemberMRsLi.addEventListener("click", () => {
 
+        
+
         // It is already active, no need to pull data.
-        if (!setOthersTabItemActive(allMemberMRsA)) return
+        if (!setMRListingTabItemActive(allMemberMRsA)) return
 
         // Remove previous tabs contents we don't need.
 
         // The issues list
-        const issuingList = contentBody.getElementsByClassName("content-list mr-list issuable-list")[0]
-        if (issuingList) contentBody.removeChild(issuingList)
+        const issuingList = contentBody.getElementsByClassName("issuable-list")[0]
 
         // No listings section
         const emptySection = contentBody.getElementsByTagName("section")[0]
@@ -60,12 +68,9 @@ function allMemberMergeRequests(contentBody) {
             return
         }
 
-        const mrListings = document.createElement("ul")
-        mrListings.className = "content-list mr-list issuable-list"
-
+        const mrListings = issuingList
         mrListings.replaceChildren(createLoadingSpinner())
 
-        contentBody.appendChild(mrListings)
 
         // The filter and sort fields
         modifyFilterSection(mrListings)
@@ -73,17 +78,25 @@ function allMemberMergeRequests(contentBody) {
         modifyOrderButton()
 
         // TODO: Disable recent filters button for now
-        document.getElementsByClassName("dropdown-menu-toggle gl-button btn btn-default filtered-search-history-dropdown-toggle-button")[0].disabled = true
+        document.getElementsByClassName("btn btn-default btn-md gl-button btn-default-tertiary gl-new-dropdown-toggle gl-new-dropdown-icon-only btn-icon")[0].disabled = true
 
         // const filters = getFilters(filterForm)
         getUserToAllMergeRequests(filters).then(users => {
             const sortBy = getSortByField()
             const order = getOrderByField()
             const liElems = users.allAssignedMRsAsLiElements(sortBy, order)
-            modifyMilestonesFilter(users.getAllMilestones())
+            // modifyMilestonesFilter(users.getAllMilestones())
             if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
             else mrListings.replaceChildren(...liElems)
             document.getElementById(BADGE_COUNTER_ID).textContent = liElems.length
+
+            if (isFirstClick) {
+                users.users.forEach(user => {
+                    // TODO: two users may have the same name, flip the map later on.
+                    ALL_NAME_TO_USERNAME[user.name] = user.username
+                })
+                isFirstClick = false;
+            }
         })
 
     })
@@ -97,32 +110,37 @@ function createLoadingSpinner() {
 }
 
 function getFilters(form) {
-    const filterElems = form.getElementsByClassName("tokens-container list-unstyled")[0]
     const filters = {}
 
     // Filters
-    for (let currElem of filterElems.getElementsByClassName("filtered-search-token")) {
-        const key = currElem.getElementsByClassName(" name")[0].textContent.trim()
-        const op = currElem.getElementsByClassName("operator")[0].textContent.trim()
-        const valueContainer = currElem.getElementsByClassName("value-container")[0]
-        const value = valueContainer.getAttribute("data-original-value")
-            ? valueContainer.getAttribute("data-original-value").trim()
-            : valueContainer?.firstElementChild.textContent.trim()
-        if (currElem && key && op && value) filters[key] = (op == "=" ? "" : "!") + value
+    for (let currElem of form.getElementsByClassName("gl-filtered-search-token")) {
+        const key = currElem.getElementsByClassName("gl-filtered-search-token-type")[0].firstElementChild.textContent.trim()
+        const op = currElem.getElementsByClassName("gl-filtered-search-token-operator")[0].firstElementChild.textContent.trim()
+        let value = currElem.getElementsByClassName("gl-filtered-search-token-data")[0].firstElementChild.textContent.trim()
+        if (ALL_NAME_TO_USERNAME[value]) {
+            value = ALL_NAME_TO_USERNAME[value]
+        }
+        if (currElem && key && op && value) filters[key.toLowerCase()] = (op == "=" ? "" : "!") + value.toLowerCase()
     }
 
-    // Search word
-    const searchElem = filterElems.getElementsByClassName("filtered-search-term")
-    const searchText = filterElems.querySelector("input").value
-    if (searchElem.length != 0) filters["search"] = searchElem[0].firstElementChild.textContent
-    else if (searchText != "") filters["search"] = searchText
+    // Search Words
+    const searchElems = form.getElementsByClassName("gl-filtered-search-term")
+    if (searchElems.length != 1) {
+        const search = []
+        for (let searchElem of searchElems) {
+            const searchTexts = searchElem.getElementsByClassName("gl-token-content")
+            if (searchTexts.length == 0) continue
+            const searchText = searchTexts[0].textContent.trim();
+            if (searchText) search.push(searchText.replace(/"/g, ''))
+        }
+        filters["search"] = search.join(" ")
+    }
 
     return filters
 }
 
 function modifyFilterSection(mrListings) {
-    const dropdowns = document.getElementById("js-dropdown-hint")
-    const filterForm = document.getElementsByClassName("filter-form js-filter-form gl-w-full")[0]
+    const filterForm = document.getElementsByClassName("gl-filtered-search-scrollable")[0]
     filterForm.addEventListener("keydown", (event) => {
         if (event.key === 'Enter') {
             event.stopPropagation()
@@ -137,13 +155,17 @@ function modifyFilterSection(mrListings) {
                 if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
                 else mrListings.replaceChildren(...liElems)
                 // Gitlab auto-triggers the dropdown panel to show up again, this forces it shut after we got the results.
+                const dropdowns = filterForm.parentElement.parentElement.getElementsByClassName("dropdown-menu")[0]
                 dropdowns.style.display = "none"
+                modifyFilterDropDown(dropdowns, filterForm, mrListings)
+                // refresh for when clear button might appear.
+                modifyClearButton(filterForm, mrListings)
             })
-
         }
     }, true)
+}
 
-
+function modifyFilterDropDown(dropdowns, filterForm, mrListings) {
     dropdowns.addEventListener("click", (event) => {
         const searchDropDownStyle = dropdowns.firstElementChild.lastElementChild.style
         const btnName = event.target.innerHTML.trim().toLowerCase()
@@ -168,15 +190,14 @@ function modifyFilterSection(mrListings) {
         }
 
     }, true)
+}
 
-    const clearButton = filterForm.getElementsByClassName("gl-button btn btn-icon btn-sm btn-default btn-default-tertiary clear-search hidden gl-self-center gl-mr-1 has-tooltip")[0]
+function modifyClearButton(filterForm, mrListings) {
+    const clearButton = filterForm.parentElement.parentElement.getElementsByClassName("gl-search-box-by-click-clear-button")[0]
     if (!clearButton) return
-    clearButton.addEventListener("click", (event) => {
-        event.stopPropagation()
-        event.preventDefault()
-        const activeFilters = filterForm.getElementsByClassName("filtered-search-token")
-        const filterList = activeFilters[0].parentElement
-        const remainder = filterList.getElementsByClassName("input-token")[0]
+    clearButton.addEventListener("click", () => {
+        const filterList = filterForm
+        const remainder = filterList.lastElementChild
         filterList.replaceChildren(remainder)
         mrListings.replaceChildren(createLoadingSpinner())
 
@@ -188,11 +209,11 @@ function modifyFilterSection(mrListings) {
             if (liElems.length == 0) mrListings.replaceChildren(buildEmptyMRsContent())
             else mrListings.replaceChildren(...liElems)
         })
-        clearButton.classList.add("hidden")
-    }, true)
+    })
 }
 
 function modifyMilestonesFilter(milestones) {
+    // dropdown-menu gl-fil
     const milestoneDropdown = document.getElementById("js-dropdown-milestone")
     const dropdownListOther = document.createElement("ul")
     dropdownListOther.className = "filter-dropdown"
@@ -235,9 +256,9 @@ function modifyMilestonesFilter(milestones) {
 }
 
 function modifyOrderButton() {
-    const orderButton = document.getElementsByClassName("gl-button btn btn-icon btn-md btn-default has-tooltip reverse-sort-btn rspec-reverse-sort")[0]
+    const orderButton = document.getElementsByClassName("gl-button sorting-direction-button")[0]
     const modifiedButton = document.createElement("span")
-    modifiedButton.className = "gl-button btn btn-icon btn-md btn-default has-tooltip reverse-sort-btn rspec-reverse-sort"
+    modifiedButton.className = orderButton.className
     modifiedButton.title = "Sort direction"
     modifiedButton.appendChild(orderButton.firstElementChild.cloneNode(true))
     orderButton.parentElement.replaceChild(modifiedButton, orderButton)
@@ -258,7 +279,7 @@ function modifyOrderButton() {
 
 function modifySortSection(mrListings) {
     // Ensure the position of drop down is the same as the others.
-    const sortButtonGroup = document.getElementsByClassName("gl-new-dropdown gl-new-dropdown js-redirect-listbox btn-group")[0]
+    const sortButtonGroup = document.getElementsByClassName("gl-sorting sort-dropdown-container")[0]
     sortButtonGroup.getElementsByClassName("gl-new-dropdown-panel")[0].style = "left: -122.406px; top: 36px;"
 
     const sortFieldOptions = sortButtonGroup.getElementsByClassName("gl-new-dropdown-contents")[0]
@@ -312,13 +333,13 @@ function modifySortSection(mrListings) {
 }
 
 function getSortByField() {
-    const sortButtonGroup = document.getElementsByClassName("gl-new-dropdown gl-new-dropdown js-redirect-listbox btn-group")[0]
-    const sortButton = sortButtonGroup.getElementsByClassName("gl-new-dropdown-toggle")[0]
+    const sortButtonGroup = document.getElementsByClassName("gl-sorting gl-button-group")[0]
+    const sortButton = sortButtonGroup.getElementsByClassName("gl-button gl-new-dropdown-toggle")[0]
     return sortButton.getElementsByClassName("gl-new-dropdown-button-text")[0].textContent.trim()
 }
 
 function getOrderByField() {
-    return document.getElementsByClassName("gl-button btn btn-icon btn-md btn-default has-tooltip reverse-sort-btn rspec-reverse-sort")[0]
+    return document.getElementsByClassName("gl-button btn-icon sorting-direction-button")[0]
         .firstElementChild.getAttribute("data-testid") == "sort-highest-icon"
         ? "desc"
         : "asc"
@@ -366,18 +387,33 @@ function buildEmptyMRsContent() {
     return section
 }
 
-function setOthersTabItemActive(othersTabItem) {
-    if (othersTabItem.classList.contains("active")) return false
+function setMRListingTabItemActive(mrListingTabItem) {
+
+    if (mrListingTabItem.classList.contains("active")) return false
 
     const currentActive = document.getElementsByClassName("nav-link gl-tab-nav-item active gl-tab-nav-item-active")[0]
 
-    othersTabItem.classList.add("active", "gl-tab-nav-item-active")
+    mrListingTabItem.classList.add("active", "gl-tab-nav-item-active")
     currentActive.classList.remove("active", "gl-tab-nav-item-active")
 
     return true
 }
 
-const contentBody = document.getElementById("content-body")
+function addActiveTabItemStateManager(tabList, mrListingTabItem) {
+    for (let tabItem of tabList.children) {
+        if (tabItem === mrListingTabItem) {
+            continue
+        }
+
+        tabItem.firstElementChild.addEventListener("click", () => {
+            if (mrListingTabItem.firstElementChild.classList.contains("active")) {
+                mrListingTabItem.firstElementChild.classList.remove("active", "gl-tab-nav-item-active")
+                window.location.reload()
+            }
+        })
+    }
+}
+
+const contentBody = document.getElementById("content-body").getElementsByClassName("issuable-list-container")[0]
 if (!contentBody) exit(0);
 allMemberMergeRequests(contentBody)
-
