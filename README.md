@@ -2,7 +2,7 @@
   <img src="images/gitlab_magic_fox_store_icon.png" alt="GitLab Group Wizz " widthLogo="900">
 </p>
 
-# GitLab-Group-Wizz
+# Group Wizz For Gitlab
 Simplify Code Reviews with Group Merge Requests
 
 GitLab Group Wizz is the must-have Chrome extension for developers who want to streamline the code review process within their GitLab groups. This extension allows you to easily view and manage merge requests from people in your selected GitLab group, making collaboration and code reviews faster and more efficient.
