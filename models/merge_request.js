@@ -118,6 +118,9 @@ class MergeRequest {
             template.getElementById("template-pipeline-failed-wrapper").remove()
         }
         else {
+            // const runningPipeline = template.getElementById("template-pipeline-running-wrapper");
+            // const failedPipeline = template.getElementById("template-pipeline-failed-wrapper");
+            // const successPipeline = template.getElementById("template-pipeline-success-link");
             switch (this.pipelineStatus) {
                 case "SUCCESS":
                     template.getElementById("template-pipeline-running-wrapper").remove()

@@ -70,41 +70,75 @@ const GRAPHQL_FILTER_KEYS = {
   "source-branch": "sourceBranches",
   "environment": "environmentName",
   "deployed-before": "deployedBefore",
-  "deployed-after": "deployedAfter"
+  "deployed-after": "deployedAfter",
+  "search": "search"
 }
+
+const GRAPHQL_FILTER_KEYS_WILDCARDS = {
+  "reviewer": "reviewerWildcardId",
+  "milestone": "milestoneWildcardId"
+}
+
+const WILDCARD_IDS = ["NONE", "ANY", "STARTED", "UPCOMING"]
 
 function convertParamsToGRAPHQL(params = {}) {
   const filters = []
   const negatedFilters = []
+  let isDraft = false
   for (let [key, value] of Object.entries(params)) {
+
+    const isWildcard = key in GRAPHQL_FILTER_KEYS_WILDCARDS && WILDCARD_IDS.includes(value.toUpperCase())
     const isNegated = value.charAt(0) == "!"
     let valStartAt = isNegated ? 1 : 0
     let valEndAt = value.length
-    switch (key) {
-      case "assignee":
-        // Handled in post-processing since GRAPHQL can't handle this for assigned merge requests.
-        continue;
-      case "author":
-      case "reviewer":
-      case "merge-user":
-      case "approver":
-      case "approved-by":
-        valStartAt += 1
-        break;
-      case "milestone":
-        if (value.substring(valStartAt).charAt(0) != "%") break;
-        valStartAt += 2
-        valEndAt -= 1
-        break;
-      default:
-        break;
+
+    if (!isWildcard) {
+      switch (key) {
+        case "assignee":
+          // Handled in post-processing since GRAPHQL can't handle this for assigned merge requests.
+          continue;
+        case "author":
+        case "reviewer":
+        case "merge-user":
+        case "approver":
+        case "approved-by":
+          break;
+        case "draft": {
+          isDraft = true
+          value = value.substring(valStartAt, valEndAt).toLowerCase() == "yes"
+          break;
+        }
+        case "milestone":
+          if (value.substring(valStartAt).charAt(0) != "%") break;
+          valStartAt += 1
+          break;
+        default:
+          break;
+      }
+      if (!isDraft) {
+        isNegated
+          ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS[key]}: "${value.substring(valStartAt, valEndAt)}"`)
+          : filters.push(`${GRAPHQL_FILTER_KEYS[key]}: "${value.substring(valStartAt, valEndAt)}"`)
+      }
+      else {
+        // Negated case should never happen for the draft filter
+        isNegated
+          ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS[key]}: ${value}`)
+          : filters.push(`${GRAPHQL_FILTER_KEYS[key]}: ${value}`)
+        isDraft = false
+      }
     }
-    isNegated
-      ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS[key]}: "${value.substring(valStartAt, valEndAt)}"`)
-      : filters.push(`${GRAPHQL_FILTER_KEYS[key]}: "${value.substring(valStartAt, valEndAt)}"`)
+    else {
+      isNegated
+        ? negatedFilters.push(`${GRAPHQL_FILTER_KEYS_WILDCARDS[key]}: ${value.substring(1).toUpperCase()}`)
+        : filters.push(`${GRAPHQL_FILTER_KEYS_WILDCARDS[key]}: ${value.toUpperCase()}`)
+    }
+
   }
+
   if (negatedFilters.length != 0) filters.push(" not: " + `{ ${negatedFilters.join(",")} }`)
-  if (filters.length != 0) return "," + filters.join(",")
+  if (filters.length != 0) return filters.join(",")
+
   return ""
 }
 
@@ -117,7 +151,6 @@ function filterAsignee(username, assignee) {
 }
 
 async function getUserToAllMergeRequests(params = {}) {
-
   const filters = convertParamsToGRAPHQL(params)
   const query = `query { 
     group(fullPath: "${GROUP_FULL_PATH}") {
@@ -129,7 +162,7 @@ async function getUserToAllMergeRequests(params = {}) {
             name
             avatarUrl
             webPath
-            assignedMergeRequests(state: opened ${filters}) {
+            assignedMergeRequests(state: opened, ${filters}) {
               ${GRAPHQL_MRS_QUERY_BODY}
             }
           }
@@ -160,7 +193,7 @@ async function getMergeRequestCountForGroupMembers(params = {}) {
         nodes {
           user {
             username
-            assignedMergeRequests(state: opened ${filters}) {
+            assignedMergeRequests(state: opened, ${filters}) {
               ${GRAPHQL_COUNT_MRS_QUERY_BODY}
             }
           }
