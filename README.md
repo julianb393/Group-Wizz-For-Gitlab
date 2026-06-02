@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/gitlab_magic_fox_store_icon.png" alt="GitLab Group Wizz " widthLogo="900">
+</p>
+
 # GitLab-Group-Wizz
 Simplify Code Reviews with Group Merge Requests
 
